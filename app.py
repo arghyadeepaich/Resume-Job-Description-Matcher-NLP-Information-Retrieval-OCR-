@@ -206,7 +206,7 @@ with st.container():
     left, right = st.columns([2, 1])
     with left:
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("**What this app does (non-technical):**")
+        st.markdown("**What this app does:**")
         st.info("RecruitLense reads a resume and a job description, identifies important keywords and phrases, compares them, and returns a relevance score that shows how well the resume fits the role. It supports scanned resumes via OCR.")
         st.markdown("**Quick tech summary:** TF-IDF vectorization, cosine similarity for scoring, Tesseract OCR for images/PDFs, and a Streamlit UI with Docker-ready backend.")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -232,7 +232,7 @@ with st.sidebar:
     st.markdown("- Use sample data to test performance on many rows.")
     st.markdown("- This is a baseline model — consider contextual embeddings (BERT) for better semantic matching.")
     st.divider()
-    st.markdown("Made with ❤️ • TF-IDF • Tesseract • Streamlit • Docker")
+    st.markdown("Made by Arghyadeep ❤️ ")
 
 # ------------------------------
 # Main Uploader area
