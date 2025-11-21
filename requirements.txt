@@ -1,0 +1,9 @@
+streamlit
+pandas
+pypdf2
+pdfplumber
+python-docx
+pillow
+pytesseract
+scikit-learn
+openpyxl
