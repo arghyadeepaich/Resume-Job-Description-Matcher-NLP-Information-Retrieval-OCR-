@@ -215,7 +215,7 @@ with st.container():
         st.markdown("**Core features**")
         st.write("- OCR for scanned resumes")
         st.write("- Multiple file formats: PDF, DOCX, TXT, RTF, PNG, JPG, TIFF")
-        st.write("- Auto JD column detection for Excel/CSV JDs")
+        st.write("- Auto Jon Description column detection for Excel/CSV JDs")
         st.write("- TF-IDF + cosine similarity scoring")
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -242,7 +242,7 @@ col1, col2 = st.columns(2)
 with col1:
     resume = st.file_uploader("Upload Resume", type=["pdf","docx","txt","rtf","png","jpg","jpeg","tiff","bmp"])
 with col2:
-    jd_file = st.file_uploader("Upload JD File (Excel/CSV/PDF/Doc/Image)", type=["xlsx","csv","pdf","docx","txt","png","jpg","jpeg","tiff","bmp"])
+    jd_file = st.file_uploader("Upload Job Description File (Excel/CSV/PDF/Doc/Image)", type=["xlsx","csv","pdf","docx","txt","png","jpg","jpeg","tiff","bmp"])
 
 use_ocr = st.checkbox("Enable OCR (slower — use for scanned or image files)", value=True)
 
@@ -269,7 +269,7 @@ if resume and jd_file:
     title_col = find_title_col(jd_df)
 
     if not jd_col:
-        st.error("Could not find a 'Description' column in the JD file. Please upload a JD with a Description column or upload a single JD document (PDF/DOCX/TXT).")
+        st.error("Could not find a 'Description' column in the Job Description file. Please upload a file with a Description column or upload a single JD document (PDF/DOCX/TXT).")
         st.stop()
 
     # 3. Process Resume
