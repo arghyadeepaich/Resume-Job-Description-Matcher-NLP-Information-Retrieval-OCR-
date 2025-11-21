@@ -84,6 +84,12 @@ st.markdown(
     @media (max-width: 900px) {
         .title { font-size: 24px !important; }
     }
+
+    div[data-testid="column"] > div:first-child {
+    background: #ffffff !important;
+    border-radius: 12px;
+    padding: 10px;
+}
     </style>
     """,
     unsafe_allow_html=True,
