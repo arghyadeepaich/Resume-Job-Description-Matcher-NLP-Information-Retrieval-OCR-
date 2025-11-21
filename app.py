@@ -1,11 +1,4 @@
-# app.py — Resume ↔ JD Matcher with Full OCR (Docker-ready)
-# Features:
-# - OCR on images & scanned PDFs
-# - PDF/DOCX/TXT/RTF/PNG/JPG/TIFF support for both resume and JD
-# - Auto JD column detection (Description & Designation)
-# - TF-IDF + cosine similarity (no transformers)
-# - Preview extracted text
-# - Clean & simple UI
+
 
 import streamlit as st
 import pandas as pd
@@ -18,7 +11,35 @@ import pytesseract
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-st.set_page_config(page_title="Resume Matcher (OCR Enabled)", layout="wide")
+# ------------------------------
+# Page config & small CSS
+# ------------------------------
+st.set_page_config(page_title="RecruitLense — Resume Matcher", layout="wide", page_icon="🔎")
+
+# Simple CSS to improve look
+st.markdown(
+    """
+    <style>
+    .title {
+        font-size:32px !important;
+        font-weight:700 !important;
+        color:#0f172a;
+    }
+    .subtitle {
+        font-size:14px !important;
+        color:#334155;
+    }
+    .card {
+        background: #ffffff;
+        padding: 16px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(2,6,23,0.06);
+    }
+    .muted { color: #475569; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # ------------------------------
 # Text cleaning
@@ -107,7 +128,7 @@ def extract_any(file, use_ocr):
 # ------------------------------
 def find_jd_col(df):
     # Priority keys for Job Description
-    keys = ["description", "jd", "responsibil", "require", "profile", "job_desc"]
+    keys = ["description", "jd", "responsibil", "require", "profile", "job_desc", "job description"]
     for c in df.columns:
         if any(k in c.lower() for k in keys):
             return c
@@ -126,48 +147,94 @@ def find_title_col(df):
     return None
 
 # ------------------------------
-# UI
+# Top area: title, subtitle, features, sidebar steps
 # ------------------------------
-st.title("🔎 Resume Matcher (Full OCR)")
-st.write("Upload your Resume and a Job Description file (Excel/CSV/PDF/Image).")
+st.markdown('<div class="title">🔎 RecruitLense</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Resume ↔ Job Description matching • OCR-enabled • TF-IDF ranking • Docker-ready demo</div>', unsafe_allow_html=True)
+st.markdown("")  # spacer
 
+# Features card and non-technical explanation
+with st.container():
+    left, right = st.columns([2, 1])
+    with left:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("**What this app does (non-technical):**")
+        st.info("RecruitLense reads a resume and a job description, identifies important keywords and phrases, compares them, and returns a relevance score that shows how well the resume fits the role. It supports scanned resumes via OCR.")
+        st.markdown("**Quick tech summary:** TF-IDF vectorization, cosine similarity for scoring, Tesseract OCR for images/PDFs, and a Streamlit UI with Docker-ready backend.")
+        st.markdown("</div>", unsafe_allow_html=True)
+    with right:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("**Core features**")
+        st.write("- OCR for scanned resumes")
+        st.write("- Multiple file formats: PDF, DOCX, TXT, RTF, PNG, JPG, TIFF")
+        st.write("- Auto JD column detection for Excel/CSV JDs")
+        st.write("- TF-IDF + cosine similarity scoring")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# Sidebar with step-by-step checklist
+with st.sidebar:
+    st.header("How to use RecruitLense")
+    st.markdown("**Step 1:** Upload a resume (PDF/DOCX/TXT/Image).")
+    st.markdown("**Step 2:** Upload a JD file (Excel/CSV/PDF/Doc/Image).")
+    st.markdown("**Step 3:** Toggle OCR if the document is scanned or an image (recommended for images).")
+    st.markdown("**Step 4:** View extracted text, match scores, and download results.")
+    st.divider()
+    st.markdown("**Tips:**")
+    st.markdown("- For Excel/CSV JD files, have a `Description` column for best results.")
+    st.markdown("- Use sample data to test performance on many rows.")
+    st.markdown("- This is a baseline model — consider contextual embeddings (BERT) for better semantic matching.")
+    st.divider()
+    st.markdown("Made with ❤️ • TF-IDF • Tesseract • Streamlit • Docker")
+
+# ------------------------------
+# Main Uploader area
+# ------------------------------
+st.write("")  # spacer
 col1, col2 = st.columns(2)
 with col1:
-    resume = st.file_uploader("Upload Resume", type=["pdf","docx","txt","rtf","png","jpg"])
+    resume = st.file_uploader("Upload Resume", type=["pdf","docx","txt","rtf","png","jpg","jpeg","tiff","bmp"])
 with col2:
-    jd_file = st.file_uploader("Upload JD File", type=["xlsx","csv","pdf","docx","txt","png","jpg"])
+    jd_file = st.file_uploader("Upload JD File (Excel/CSV/PDF/Doc/Image)", type=["xlsx","csv","pdf","docx","txt","png","jpg","jpeg","tiff","bmp"])
 
-use_ocr = st.checkbox("Enable OCR (Slows down processing but reads images)", value=True)
+use_ocr = st.checkbox("Enable OCR (slower — use for scanned or image files)", value=True)
 
+# ------------------------------
+# Matching logic (unchanged core)
+# ------------------------------
 if resume and jd_file:
     # 1. Process JD File
-    if jd_file.name.endswith(".xlsx"):
-        jd_df = pd.read_excel(jd_file)
-    elif jd_file.name.endswith(".csv"):
-        jd_df = pd.read_csv(jd_file)
-    else:
-        # Non-tabular JD (PDF/Image/Doc) - treat as single entry
-        jd_text = extract_any(jd_file, use_ocr)
-        jd_df = pd.DataFrame({"Job Description": [jd_text], "Designation": ["Uploaded File"]})
+    try:
+        if jd_file.name.lower().endswith(".xlsx"):
+            jd_df = pd.read_excel(jd_file)
+        elif jd_file.name.lower().endswith(".csv"):
+            jd_df = pd.read_csv(jd_file)
+        else:
+            # Non-tabular JD (PDF/Image/Doc) - treat as single entry
+            jd_text = extract_any(jd_file, use_ocr)
+            jd_df = pd.DataFrame({"Job Description": [jd_text], "Designation": ["Uploaded File"]})
+    except Exception as e:
+        st.error(f"Could not read JD file: {e}")
+        st.stop()
 
     # 2. Identify Columns
     jd_col = find_jd_col(jd_df)
     title_col = find_title_col(jd_df)
 
     if not jd_col:
-        st.error("Could not find a 'Description' column in the JD file.")
+        st.error("Could not find a 'Description' column in the JD file. Please upload a JD with a Description column or upload a single JD document (PDF/DOCX/TXT).")
         st.stop()
 
     # 3. Process Resume
     with st.spinner("Extracting resume text..."):
         resume_text = extract_any(resume, use_ocr)
-    
+
     if not resume_text.strip():
-        st.error("Resume text is empty. Try enabling OCR.")
+        st.error("Resume text is empty. Try enabling OCR or upload a different file.")
         st.stop()
 
-    with st.expander("View Extracted Resume Text"):
-        st.text(resume_text[:1000] + "...")
+    # Show extracted text preview and allow toggling full view
+    with st.expander("View Extracted Resume Text (preview)"):
+        st.text(resume_text[:2000] + ("..." if len(resume_text) > 2000 else ""))
 
     # 4. Match
     cleaned_resume = clean_text(resume_text)
@@ -179,11 +246,10 @@ if resume and jd_file:
     tfidf_matrix = vectorizer.fit_transform(corpus)
 
     # Calculate cosine similarity (Resume is index 0, JDs are 1..N)
-    # We compare index 0 against 1..N
     doc_sim = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
 
     jd_df["Match Score (%)"] = (doc_sim * 100).round(2)
-    
+
     # 5. Sort and Display
     out = jd_df.sort_values("Match Score (%)", ascending=False)
 
@@ -194,11 +260,25 @@ if resume and jd_file:
     cols_to_show.append(jd_col)
 
     st.success(f"Matched against {len(jd_df)} job descriptions.")
-    st.dataframe(out[cols_to_show].head(50), use_container_width=True)
+    # Show top matches in a left column, details on the right
+    left_col, right_col = st.columns([2, 1])
+    with left_col:
+        st.subheader("Top Matches")
+        st.dataframe(out[cols_to_show].head(50).reset_index(drop=True), use_container_width=True)
+    with right_col:
+        st.subheader("Result Summary")
+        st.metric("Top score (%)", float(out["Match Score (%)"].iloc[0]) if not out.empty else 0.0)
+        st.markdown("**What this score means:** higher = more words/phrases overlap in important sections; baseline TF-IDF model may miss deep semantic matches that BERT could capture.")
 
+    # Download
+    csv_data = out.to_csv(index=False)
     st.download_button(
         "Download Results CSV",
-        out.to_csv(index=False),
+        csv_data,
         "resume_matches.csv",
         "text/csv"
     )
+
+else:
+    st.info("Upload a Resume and a Job Description file to get started. Use the sidebar for tips and steps.")
+
