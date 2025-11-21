@@ -20,25 +20,73 @@ st.set_page_config(page_title="RecruitLense — Resume Matcher", layout="wide", 
 st.markdown(
     """
     <style>
-    .title {
-        font-size:32px !important;
-        font-weight:700 !important;
-        color:#0f172a;
-    }
-    .subtitle {
-        font-size:14px !important;
-        color:#334155;
-    }
+    /* Base typography */
+    .title { font-size:32px !important; font-weight:700 !important; }
+    .subtitle { font-size:14px !important; margin-bottom:8px; }
+
+    /* Card look used in both themes */
     .card {
-        background: #ffffff;
         padding: 16px;
         border-radius: 10px;
         box-shadow: 0 2px 10px rgba(2,6,23,0.06);
+        margin-bottom: 12px;
     }
-    .muted { color: #475569; }
+
+    /* Inputs / uploader rounded */
+    .stFileUploader, .stTextInput, .stMultiSelect, .stSelectbox {
+        border-radius: 8px !important;
+    }
+
+    /* Light theme defaults */
+    @media (prefers-color-scheme: light) {
+        .title { color: #0f172a !important; }
+        .subtitle { color: #334155 !important; }
+        .card { background: #ffffff; color: #0f172a; }
+        .stAlert, .stInfo { color: #0f172a; }
+        .stDownloadButton>button { background-color: #0f172a !important; color: #fff !important; }
+        .stMetric>div>div { color: #0f172a !important; }
+        .stDataFrame, .css-1d391kg { color: #0f172a !important; }
+    }
+
+    /* Dark theme overrides */
+    @media (prefers-color-scheme: dark) {
+        /* page background note: streamlit sets its own; we only alter components */
+        .title { color: #e6f0ff !important; }
+        .subtitle { color: #cbd5e1 !important; }
+        .card {
+            background: #0b1220 !important;
+            color: #e6eef8 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+        }
+        .stInfo, .stAlert {
+            background: rgba(255,255,255,0.03) !important;
+            color: #dbeafe !important;
+            border-left: 3px solid rgba(99,102,241,0.9) !important;
+        }
+        .stDownloadButton>button {
+            background-color: #1f2937 !important;
+            color: #e6eef8 !important;
+        }
+        /* Uploader box contrast */
+        .css-1dp5vir { background: rgba(255,255,255,0.02) !important; border: 1px solid rgba(255,255,255,0.04) !important; }
+        /* Dataframe header */
+        .stDataFrame table thead th {
+            background: rgba(255,255,255,0.03) !important;
+            color: #e6eef8 !important;
+        }
+        /* Metric color */
+        .stMetric>div>div { color: #e6eef8 !important; }
+        /* Sidebar clearer */
+        .css-1d391kg { color: #e6eef8 !important; }
+    }
+
+    /* Small responsive tweaks */
+    @media (max-width: 900px) {
+        .title { font-size: 24px !important; }
+    }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 # ------------------------------
