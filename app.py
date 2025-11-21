@@ -215,7 +215,7 @@ with st.container():
         st.markdown("**Core features**")
         st.write("- OCR for scanned resumes")
         st.write("- Multiple file formats: PDF, DOCX, TXT, RTF, PNG, JPG, TIFF")
-        st.write("- Auto Jon Description column detection for Excel/CSV JDs")
+        st.write("- Auto Job Description column detection for Excel/CSV JDs")
         st.write("- TF-IDF + cosine similarity scoring")
         st.markdown("</div>", unsafe_allow_html=True)
 
